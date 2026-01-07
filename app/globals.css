@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@layer utilities {
+  .glass-card {
+    @apply bg-surface-dark/40 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden shadow-glow;
+  }
+}
