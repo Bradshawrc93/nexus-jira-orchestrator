@@ -9,11 +9,7 @@ const config: Config = {
   ],
   presets: [nexusPreset],
   theme: {
-    extend: {
-      backgroundImage: {
-        "tech-grid": "url('/grid.svg')",
-      },
-    },
+    extend: {},
   },
   plugins: [],
 };
