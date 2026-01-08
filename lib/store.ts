@@ -1,20 +1,16 @@
 import { create } from 'zustand';
 import { JiraProject, JiraSprint, JiraIssue } from './jira-client';
-
-interface Suggestion {
-  id: string;
-  issueKey: string;
-  action: string;
-  reason: string;
-  status: 'pending' | 'accepted' | 'rejected';
-}
+import { Suggestion } from './langgraph';
 
 interface OrchestratorState {
   projects: JiraProject[];
   activeProjectKey: string | null;
   activeBoardId: number | null;
   activeSprint: JiraSprint | null;
-  issues: JiraIssue[];
+  allSprints: JiraSprint[];
+  activeCeremonyType: 'standup' | 'planning' | 'review' | null;
+  issues: JiraIssue[]; // Active sprint issues
+  backlogIssues: JiraIssue[]; // Backlog for planning
   activeTicketId: string | null;
   suggestions: Suggestion[];
   isLoading: boolean;
@@ -24,7 +20,10 @@ interface OrchestratorState {
   setActiveProject: (projectKey: string) => void;
   setActiveBoardId: (boardId: number | null) => void;
   setActiveSprint: (sprint: JiraSprint | null) => void;
+  setAllSprints: (sprints: JiraSprint[]) => void;
+  setActiveCeremonyType: (type: 'standup' | 'planning' | 'review' | null) => void;
   setIssues: (issues: JiraIssue[]) => void;
+  setBacklogIssues: (issues: JiraIssue[]) => void;
   setActiveTicket: (ticketId: string | null) => void;
   addSuggestion: (suggestion: Omit<Suggestion, 'id' | 'status'>) => void;
   updateSuggestionStatus: (id: string, status: 'accepted' | 'rejected') => void;
@@ -37,7 +36,10 @@ export const useOrchestratorStore = create<OrchestratorState>((set) => ({
   activeProjectKey: null,
   activeBoardId: null,
   activeSprint: null,
+  allSprints: [],
+  activeCeremonyType: null,
   issues: [],
+  backlogIssues: [],
   activeTicketId: null,
   suggestions: [],
   isLoading: false,
@@ -47,7 +49,10 @@ export const useOrchestratorStore = create<OrchestratorState>((set) => ({
   setActiveProject: (projectKey) => set({ activeProjectKey: projectKey }),
   setActiveBoardId: (boardId) => set({ activeBoardId: boardId }),
   setActiveSprint: (sprint) => set({ activeSprint: sprint }),
+  setAllSprints: (sprints) => set({ allSprints: sprints }),
+  setActiveCeremonyType: (type) => set({ activeCeremonyType: type }),
   setIssues: (issues) => set({ issues }),
+  setBacklogIssues: (issues) => set({ backlogIssues: issues }),
   setActiveTicket: (ticketId) => set({ activeTicketId: ticketId }),
   
   addSuggestion: (suggestion) => set((state) => ({
@@ -64,4 +69,3 @@ export const useOrchestratorStore = create<OrchestratorState>((set) => ({
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
 }));
-

@@ -105,10 +105,23 @@ class JiraClient {
 
   // Sprint Creation
   async createSprint(name: string, originBoardId: number, goal?: string): Promise<JiraSprint> {
-    return this.request<JiraSprint>("/rest/agile/1.0/sprint", {
+    const sprint = await this.request<JiraSprint>("/rest/agile/1.0/sprint", {
       method: "POST",
       body: JSON.stringify({ name, originBoardId, goal }),
     });
+    return sprint;
+  }
+  
+  // Start Sprint
+  async startSprint(sprintId: number, startDate: string, endDate: string): Promise<void> {
+      await this.request(`/rest/agile/1.0/sprint/${sprintId}`, {
+          method: "POST",
+          body: JSON.stringify({ 
+              state: "active",
+              startDate: startDate,
+              endDate: endDate
+          }),
+      });
   }
 
   // Transition Issue (HITL)
@@ -117,6 +130,36 @@ class JiraClient {
       method: "POST",
       body: JSON.stringify({ transition: { id: transitionId } }),
     });
+  }
+
+  // Get Transitions
+  async getTransitions(issueIdOrKey: string): Promise<any[]> {
+    const res = await this.request<{ transitions: any[] }>(`/rest/api/3/issue/${issueIdOrKey}/transitions`);
+    return res.transitions;
+  }
+
+  // Get Backlog Issues (Issues not in any sprint)
+  async getBacklogIssues(boardId: number): Promise<JiraIssue[]> {
+    // JQL to find issues in the project/board that are not in a closed or active sprint
+    // Note: Jira API 'board/{boardId}/issue' returns all issues on the board.
+    // We can filter by jql "sprint is EMPTY" or check fields.
+    // Let's use the board issue endpoint with jql parameter if supported, or just fetch and filter.
+    // Standard Agile board backlog: issues with no sprint or future sprint.
+    
+    // Using a more specific JQL for backlog
+    const jql = "sprint is EMPTY OR sprint in futureSprints()";
+    const res = await this.request<{ issues: JiraIssue[] }>(
+        `/rest/agile/1.0/board/${boardId}/issue?jql=${encodeURIComponent(jql)}`
+    );
+    return res.issues;
+  }
+  
+  // Move Issue to Sprint
+  async moveIssueToSprint(issueKey: string, sprintId: number): Promise<void> {
+      await this.request(`/rest/agile/1.0/sprint/${sprintId}/issue`, {
+          method: "POST",
+          body: JSON.stringify({ issues: [issueKey] })
+      });
   }
 }
 

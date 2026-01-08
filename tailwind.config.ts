@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+// @ts-ignore
 import nexusPreset from "nexus-tailwind-preset";
 
 const config: Config = {

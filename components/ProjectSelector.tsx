@@ -14,6 +14,8 @@ export default function ProjectSelector() {
     setActiveBoardId,
     setActiveSprint, 
     setIssues,
+    setAllSprints,
+    setBacklogIssues,
     setLoading,
     isLoading 
   } = useOrchestratorStore();
@@ -40,9 +42,11 @@ export default function ProjectSelector() {
     try {
       setActiveProject(projectKey);
       const context = await getProjectContext(projectKey);
-      setActiveBoardId(context.boardId);
+      setActiveBoardId(context.boardId ?? null);
       setActiveSprint(context.sprint);
+      setAllSprints(context.allSprints ?? []); // Store all sprints
       setIssues(context.issues);
+      setBacklogIssues(context.backlogIssues ?? []); // Store backlog
     } catch (err) {
       setLocalError("Failed to load project details.");
     } finally {
@@ -75,7 +79,7 @@ export default function ProjectSelector() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {projects.map((project) => (
+      {projects.map((project: any) => (
         <button
           key={project.id}
           onClick={() => handleSelect(project.key)}
